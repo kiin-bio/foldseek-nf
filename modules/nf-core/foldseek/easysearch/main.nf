@@ -12,7 +12,7 @@ process FOLDSEEK_EASYSEARCH {
     tuple val(meta_db), path(db)
 
     output:
-    tuple val(meta), path("${meta.id}.m8"), emit: aln
+    tuple val(meta), path("${meta.id}.tsv"), emit: aln
     path "versions.yml"                   , emit: versions
 
     when:
@@ -26,7 +26,7 @@ process FOLDSEEK_EASYSEARCH {
         easy-search \\
         ${pdb} \\
         ${db}/${meta_db.id} \\
-        ${prefix}.m8 \\
+        ${prefix}.tsv \\
         tmpFolder \\
         ${args}
 
