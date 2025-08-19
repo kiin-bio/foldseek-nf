@@ -1,0 +1,15 @@
+repository_type: pipeline
+
+nf_core_version: 3.3.2
+
+lint: {}
+
+template:
+  org: nf-core
+  name: foldseek
+  description: Pipeline to run foldseek on given protein
+  author: Joao Luiz de Meirelles
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  is_nfcore: true
