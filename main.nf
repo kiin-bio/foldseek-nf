@@ -15,7 +15,8 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { FOLDSEEK  } from './workflows/foldseek'
+
+include { FOLDSEEK_EASYSEARCH } from './modules/nf-core/foldseek/easysearch/main'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_foldseek_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_foldseek_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_foldseek_pipeline'
@@ -43,18 +44,20 @@ params.fasta = getGenomeAttribute('fasta')
 workflow NFCORE_FOLDSEEK {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    pdb
+    db
 
     main:
 
     //
     // WORKFLOW: Run pipeline
     //
-    FOLDSEEK (
-        samplesheet
+    FOLDSEEK_EASYSEARCH (
+        [["id": "pdb"], pdb],
+        [["id":"afdb"], [db]]
     )
     emit:
-    multiqc_report = FOLDSEEK.out.multiqc_report // channel: /path/to/multiqc_report.html
+    aln = FOLDSEEK_EASYSEARCH.out.aln
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,35 +68,13 @@ workflow NFCORE_FOLDSEEK {
 workflow {
 
     main:
-    //
-    // SUBWORKFLOW: Run initialisation tasks
-    //
-    PIPELINE_INITIALISATION (
-        params.version,
-        params.validate_params,
-        params.monochrome_logs,
-        args,
-        params.outdir,
-        params.input
-    )
 
     //
     // WORKFLOW: Run main workflow
     //
     NFCORE_FOLDSEEK (
-        PIPELINE_INITIALISATION.out.samplesheet
-    )
-    //
-    // SUBWORKFLOW: Run completion tasks
-    //
-    PIPELINE_COMPLETION (
-        params.email,
-        params.email_on_fail,
-        params.plaintext_email,
-        params.outdir,
-        params.monochrome_logs,
-        params.hook_url,
-        NFCORE_FOLDSEEK.out.multiqc_report
+        params.pdb,
+        params.db
     )
 }
 

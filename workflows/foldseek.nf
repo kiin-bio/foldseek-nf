@@ -19,7 +19,8 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_fold
 workflow FOLDSEEK {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    pdb
+    db
     main:
 
     ch_versions = Channel.empty()
@@ -28,7 +29,8 @@ workflow FOLDSEEK {
     // MODULE: Run FastQC
     //
     FASTQC (
-        ch_samplesheet
+        [[], pdb],
+        [["id":"afdb"], [db]]
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
