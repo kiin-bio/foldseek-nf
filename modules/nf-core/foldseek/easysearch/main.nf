@@ -12,23 +12,42 @@ process FOLDSEEK_EASYSEARCH {
     tuple val(meta_db), path(db)
 
     output:
-    tuple val(meta), path("${meta.id}.tsv"), emit: aln
+    tuple val(meta), path("${meta.id}.tsv"), path("${meta.id}.html"), emit: aln
     path "versions.yml"                   , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
-    def args = task.ext.args ?: ''
+    def convert_args = task.ext.convert_args ?: ''
+    def search_args = task.ext.search_args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    """
+    """  
+    foldseek createdb ${pdb} qdb
+    
     foldseek \\
-        easy-search \\
-        ${pdb} \\
+        search \\
+        qdb \\
         ${db}/${meta_db.id} \\
+        ${prefix} \\
+        ${search_args} \\
+        tmpFolder 
+
+    foldseek \\
+        convertalis \\
+        qdb \\
+        ${db}/${meta_db.id} \\
+        ${prefix} \\
         ${prefix}.tsv \\
-        tmpFolder \\
-        ${args}
+        ${convert_args}
+
+    foldseek \\
+        convertalis \\
+        qdb \\
+        ${db}/${meta_db.id} \\
+        ${prefix} \\
+        ${prefix}.html \\
+        --format-mode 3
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
