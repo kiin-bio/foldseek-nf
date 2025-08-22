@@ -44,7 +44,7 @@ params.fasta = getGenomeAttribute('fasta')
 workflow NFCORE_FOLDSEEK {
 
     take:
-    pdb
+    samplesheet
     db
 
     main:
@@ -52,8 +52,14 @@ workflow NFCORE_FOLDSEEK {
     //
     // WORKFLOW: Run pipeline
     //
+    Channel.fromPath(samplesheet).splitCsv(header: true).map { row ->
+        [row.pdb]
+    }.collect().map { entries ->
+        [["id": "foldseek_results"], entries]
+    }.set { foldseek_input }
+
     FOLDSEEK_EASYSEARCH (
-        [["id": "pdb"], pdb],
+        foldseek_input,
         [["id":"afdb"], [db]]
     )
     emit:
@@ -73,7 +79,7 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     NFCORE_FOLDSEEK (
-        params.pdb,
+        params.samplesheet,
         params.db
     )
 }
